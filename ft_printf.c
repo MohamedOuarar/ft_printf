@@ -6,63 +6,69 @@
 /*   By: mouarar <mouarar@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/16 11:01:24 by mouarar           #+#    #+#             */
-/*   Updated: 2024/11/18 12:10:00 by mouarar          ###   ########.fr       */
+/*   Updated: 2024/11/21 11:14:43 by mouarar          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
-int	ft_putchar(char c)
-{
-	int	count;
-
-	count = 0;
-	count += write(1, &c, 1);
-	return (count);
-}
-
 int	get_symbel(const char *str, va_list argement)
 {
 	int	count;
+	int	check;
 
 	count = 0;
-	if (*str == 'd' || *str == 'i')
-		count += ft_putnbr(va_arg(argement, int));
-	else if (*str == 'u')
-		count += ft_putnbr_u(va_arg(argement, int));
-	else if (*str == 'c')
-		count += ft_putchar(va_arg(argement, int));
-	else if (*str == 's')
-		count += ft_putstr(va_arg(argement, char *));
-	else if (*str == 'x')
-		count += ft_hex(va_arg(argement, int), 0, 1);
-	else if (*str == 'X')
-		count += ft_hex(va_arg(argement, int), 1, 0);
-	else if (*str == 'p')
-		count += ft_adress(va_arg(argement, unsigned long long), 1);
-	else if (*str == '%')
-		count += write(1, "%", 1);
+	check = for_x_p(str, argement);
+	if (check != 0)
+		return (check);
+	check = for_d_i_u(str, argement);
+	if (check != 0)
+		return (check);
+	check = for_s_c(str, argement);
+	if (check != 0)
+		return (check);
 	return (count);
 }
 
-int	ft_printf(const char *str, ...)
+int	serche(const char *str, va_list argement)
 {
 	int		count_print;
-	va_list	argement;
+	int		check;
 
-	va_start(argement, str);
+	check = 0;
 	count_print = 0;
 	while (*str)
 	{
 		if (*str == '%')
 		{
-			count_print += get_symbel(str + 1, argement);
+			check = get_symbel(str + 1, argement);
+			if (check == -1)
+				return (-1);
+			count_print += check;
 			str++;
 		}
 		else
-			count_print += write(1, str, 1);
+		{
+			check = write(1, str, 1);
+			if (check == -1)
+				return (-1);
+			count_print += check;
+		}
 		str++;
 	}
+	return (count_print);
+}
+
+int	ft_printf(const char *str, ...)
+{
+	int		count_print;
+	int		check;
+	va_list	argement;
+
+	check = 0;
+	va_start(argement, str);
+	count_print = 0;
+	count_print = serche(str, argement);
 	va_end(argement);
 	return (count_print);
 }
